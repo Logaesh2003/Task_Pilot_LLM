@@ -1,8 +1,0 @@
-uvicorn
-fastapi
-dotenv
-langchain
-langchain-groq
-langchain-openai
-langchain-community
-openai
