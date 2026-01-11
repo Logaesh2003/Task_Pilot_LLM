@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 from pydantic import BaseModel
 import requests, json
-from models import AiAskRequest
+from models import AiAskRequest, AIContextItem
 load_dotenv()
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
@@ -140,6 +140,9 @@ prompt = ChatPromptTemplate.from_messages([
 
 User request:
 "{user_prompt}"
+     
+Context [ Your previous response]:
+"{context}"
 
 User tasks:
 {tasks}
@@ -154,19 +157,38 @@ outputParser = JsonOutputParser()
 
 chain = prompt | llm | outputParser
 
+def build_context_text(context: list[AIContextItem]) -> str:
+    if not context:
+        return "No prior context."
+
+    lines = []
+    for i, c in enumerate(context, start=1):
+        lines.append(
+            f"{i}. Type: {c.previousAIresponse.type if c.previousAIresponse else 'No type'}\n"
+            f"   User asked: {c.prompt}\n"
+            f"   YourPreviousResponse: {c.previousAIresponse or 'No previous conversation'}"
+        )
+    return "\n".join(lines)
+
+
 
 @app.post("/assist")
 def assist(payload : AiAskRequest):
+    
+    print(f"Received payload : {payload}")
     tasks = payload.tasks
     prompt = payload.prompt
+    context = build_context_text(payload.context)
+
     if tasks:
         response = chain.invoke({
-            "tasks" : tasks,
-            "user_prompt" : prompt
+            "user_prompt" : prompt,
+            "context" : context,
+            "tasks" : tasks
         })
         print(response)
         return response
-    return {"message":"LLM is running"}
+    return {"message":"LLM received empty Tasks list"}
 
 if __name__=="__main__":
     
