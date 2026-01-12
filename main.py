@@ -1,11 +1,13 @@
 import os
-import uvicorn
-from fastapi import FastAPI
 from dotenv import load_dotenv
-from pydantic import BaseModel
-import requests, json
-from models import AiAskRequest, AIContextItem
 load_dotenv()
+
+import uvicorn
+import requests, json
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+from models import AiAskRequest, AIContextItem
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
@@ -15,7 +17,6 @@ os.environ["LANGCHAIN_ENDPOINT"] = os.getenv("LANGCHAIN_ENDPOINT")
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
-from langchain_openai import OpenAIEmbeddings
 
 groq_api_key = os.getenv("GROQ_API_KEY")
 
